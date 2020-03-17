@@ -17,7 +17,7 @@ import org.apache.calcite.rel.`type`.RelDataType
 import org.apache.calcite.rel.core.{TableFunctionScan, TableScan}
 import org.apache.calcite.rel.logical._
 import org.apache.calcite.rel.rules._
-import org.apache.calcite.rel.{RelNode, RelShuttle}
+import org.apache.calcite.rel.{RelCollations, RelNode, RelShuttle}
 import org.apache.calcite.sql.parser.SqlParser
 import org.apache.calcite.sql.validate.{SqlValidator, SqlValidatorUtil}
 import org.apache.calcite.sql2rel.{RelDecorrelator, SqlToRelConverter}
@@ -194,7 +194,7 @@ case class SqlPrepare[F <: Factories[_, _, _, _, _, _, _]](factory: F, storeType
   }
 
 
-  def runQuery(sql: String): (List[IndexedSeq[Any]], RelDataType) = {
+  def runQuery(sql: String): (List[IndexedSeq[Any]], RelDataType, Boolean) = {
     RelOperatorUtilLog.resetFieldAccessCount()
     val operator =
       PrintUtil.time(() => {prepare(sql)}, "Prepare time")
@@ -212,7 +212,8 @@ case class SqlPrepare[F <: Factories[_, _, _, _, _, _, _]](factory: F, storeType
           case op: ch.epfl.dias.cs422.helpers.rel.early.operatoratatime.Operator => op.execute().transpose.toList
           case op: early.volcano.Operator => op.toList
         },
-        operator.getRowType
+        operator.getRowType,
+        operator.getTraitSet.containsIfApplicable(RelCollations.EMPTY)
       )
     }, "Execution time")
     println("Total accesses: " + RelOperatorUtilLog.getFieldAccessCount)

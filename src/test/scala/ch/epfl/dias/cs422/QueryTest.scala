@@ -2,9 +2,10 @@ package ch.epfl.dias.cs422
 
 import java.io.IOException
 import java.lang.management.ManagementFactory
-import java.nio.file.{Files, Path, Paths}
+import java.nio.file.{FileSystemAlreadyExistsException, FileSystems, Files, Path, Paths}
 import java.sql.SQLException
 import java.time.Duration.ofSeconds
+import java.util.Collections
 import java.util.function.BiConsumer
 import java.util.stream.Stream
 
@@ -57,7 +58,7 @@ object QueryTest {
           .sorted // sorted in order to guarantee the order between different invocations
           .map(file => {
             try { // find file containing the verification set: same path/filename but extended with .resultset
-              val rFile = Paths.get(file.toString + ".resultset")
+              val rFile = file.getFileSystem.getPath(file + ".resultset")
               val resultFile: Path = if (Files.exists(rFile) && Files.isRegularFile(rFile)) rFile else null
 
               // clean the sql command from comments and final ';'
@@ -93,24 +94,40 @@ object QueryTest {
       )
       .filter((x: DynamicNode) => x != null)
   }
+
+  private def fixOrder(resultSet: List[IndexedSeq[Any]], unsorted: Boolean): List[IndexedSeq[Any]] = {
+    if (unsorted) {
+      resultSet.asInstanceOf[List[IndexedSeq[Comparable[Any]]]].sorted(new Ordering[IndexedSeq[Comparable[Any]]]{
+        override def compare(x: IndexedSeq[Comparable[Any]], y: IndexedSeq[Comparable[Any]]): Int = {
+          for (p <- x.zip(y)) {
+            val d: Int = p._1.compareTo(p._2)
+            if (d != 0) return d
+          }
+          0
+        }
+      })
+    } else {
+      resultSet
+    }
+  }
 }
 
 class QueryTest {
   @throws[SQLException]
   @throws[IOException]
   def testQueryOrdered(sql: String, resultFile: Path, prep: SqlPrepare[_]): Unit = {
-    val (q, t) = prep.runQuery(sql)
+    val (q, t, unsorted) = prep.runQuery(sql)
     val validTable = new InputTable(t, resultFile, prep.cluster)
-    var validationSet = List[List[Any]]()
+    var validationSet = List[IndexedSeq[Any]]()
     breakable {
       while (true) {
         val next = validTable.readNext()
         if (next == null) break
-        validationSet = validationSet :+ next.toList
+        validationSet = validationSet :+ next
       }
     }
     Assertions.assertEquals(validationSet.size, q.size, "Result set has wrong size")
-    validationSet.zip(q).foreach(
+    QueryTest.fixOrder(validationSet, unsorted).zip(QueryTest.fixOrder(q, unsorted)).foreach(
       e => {
         t.getFieldList.asScala.zip(e._1).zip(e._2).foreach {
           case ((tp, expected), actual) =>
@@ -130,9 +147,23 @@ class QueryTest {
     )
   }
 
+  private def getResourceAsPath(path: String, c: Class[_]): Path = {
+    val p = c.getResource(path).toURI
+    if (p.getScheme == "jar"){
+      try {
+        FileSystems.newFileSystem(p, Collections.emptyMap[String, AnyRef]()).getPath(path)
+      } catch {
+        case _: FileSystemAlreadyExistsException => Paths.get(p)
+      }
+    } else {
+      Paths.get(p)
+    }
+  }
+
   @TestFactory
   @throws[IOException]
   private[cs422] def tests = {
+    val p = getResourceAsPath("/tests", getClass)
     List(
       "volcano (row store)" -> SqlPrepare(Factories.VOLCANO_INSTANCE, "rowstore"),
       "operator-at-a-time (row store)" -> SqlPrepare(Factories.OPERATOR_AT_A_TIME_INSTANCE, "rowstore"),
@@ -150,7 +181,7 @@ class QueryTest {
       dynamicContainer(key,
         QueryTest
           .testsFromFileTree(
-            Paths.get(classOf[QueryTest].getResource("/tests").getPath),
+            p,
             (sql: String, resultFile: Path) => {
               if (QueryTest.isDebug) {
                 testQueryOrdered(sql, resultFile, prep)

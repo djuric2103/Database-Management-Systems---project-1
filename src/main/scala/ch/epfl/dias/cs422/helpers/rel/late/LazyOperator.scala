@@ -1,5 +1,6 @@
 package ch.epfl.dias.cs422.helpers.rel.late
 
+import ch.epfl.dias.cs422.helpers.rel.RelOperatorUtilLog
 import org.apache.calcite.rel.RelNode
 import org.apache.calcite.rel.`type`.RelDataType
 import org.apache.calcite.rex.{RexInputRef, RexNode}
@@ -9,11 +10,17 @@ import scala.jdk.CollectionConverters._
 class LazyEvaluatorAccess(val l: List[Long => Any]) extends LazyEvaluatorRoot {
   def apply(vs: IndexedSeq[Any]): IndexedSeq[Any] = {
     assert(vs.size == 1)
-    l.toIndexedSeq.map(f => f(vs.head.asInstanceOf[Long]))
+    assert(vs.size == 1)
+    RelOperatorUtilLog.accesses = RelOperatorUtilLog.accesses + 1
+    val r = l.toIndexedSeq.map(f => f(vs.head.asInstanceOf[Long]))
+    RelOperatorUtilLog.accesses = RelOperatorUtilLog.accesses + r.size
+    r
   }
 
   def apply(vs: Long): IndexedSeq[Any] = {
-    l.toIndexedSeq.map(f => f(vs))
+    val r = l.toIndexedSeq.map(f => f(vs))
+    RelOperatorUtilLog.accesses = RelOperatorUtilLog.accesses + r.size
+    r
   }
 }
 

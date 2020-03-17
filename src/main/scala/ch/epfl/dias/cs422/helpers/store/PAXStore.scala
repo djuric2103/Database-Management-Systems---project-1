@@ -6,7 +6,7 @@ import ch.epfl.dias.cs422.helpers.rel.RelOperatorUtilLog
 class PAXStore private [store] (private val data: IndexedSeq[PAXPage], private val rowCount: Long) extends Store {
   def getPAXPage(i: Integer): PAXPage = {
     val tmp = data(i)
-    if (tmp.isEmpty) {
+    if (tmp.nonEmpty) {
       RelOperatorUtilLog.accesses = RelOperatorUtilLog.accesses + tmp.size * tmp.head.size
     }
     tmp
