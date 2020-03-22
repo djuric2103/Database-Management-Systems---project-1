@@ -9,9 +9,15 @@ import org.apache.calcite.util.ImmutableBitSet
 class Aggregate protected (input: Operator,
                            groupSet: ImmutableBitSet,
                            aggCalls: List[AggregateCall]) extends skeleton.Aggregate[Operator](input, groupSet, aggCalls) with Operator {
+
+
   override def open(): Unit = ???
+
 
   override def next(): Tuple = ???
 
+
   override def close(): Unit = ???
+
+
 }
