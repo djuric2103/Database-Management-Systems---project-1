@@ -35,7 +35,7 @@ order by
 
     PrintUtil.printTree(rel)
 
-    for (i <- 1 to 2) {
+    for (i <- 1 to 1) {
       println("Iteration " + i + " :")
       rel.asInstanceOf[Operator].foreach(println)
 //      // equivalent:

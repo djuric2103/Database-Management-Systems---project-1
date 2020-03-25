@@ -13,7 +13,7 @@ class Join(left: Operator,
            condition: RexNode) extends skeleton.Join[Operator](left, right, condition) with Operator {
 
   var joined = IndexedSeq[Tuple]();
-  var curr = 0;
+  var curr : Iterator[Tuple] = null;
   var mapped = new mutable.HashMap[IndexedSeq[Elem], Tuple];
 
   override def open(): Unit = {
@@ -24,7 +24,6 @@ class Join(left: Operator,
     for(u <- left) {
       val corr = mapped.get(getFields(u, getLeftKeys));
 
-      //println("\t\t"+corr.size);
       for (m <- corr) {
         println("inside")
         val r = u ++ m;
@@ -32,6 +31,7 @@ class Join(left: Operator,
       }
     }
     println("joined size: "+joined.size);
+    curr = joined.iterator;
   }
 
   def getFields(t : Tuple, keys : IndexedSeq[Int]) : IndexedSeq[Elem] ={
@@ -42,15 +42,12 @@ class Join(left: Operator,
   }
 
   override def next(): Tuple = {
-    println(curr + "\tjoined size" + joined.size);
-    if(curr >= joined.size)
-      return null;
-    curr += 1;
-    return joined(curr - 1);
+    if(curr.hasNext)
+      return curr.next();
+    return null;
   }
 
   override def close(): Unit = {
-    curr = 0;
-    //joined = null;
+
   }
 }
