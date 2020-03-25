@@ -10,8 +10,10 @@ import scala.jdk.CollectionConverters._
 
 
 class Project protected (input: Operator, projects: java.util.List[_ <: RexNode], rowType: RelDataType) extends skeleton.Project[Operator](input, projects, rowType) with Operator {
-  var current = input.iterator;
-  var start = input.iterator;
+  val start = input;
+  lazy val current = input.iterator;
+  //val n = current.size;
+  //var i = 0;
   override def open(): Unit = {
   }
 
@@ -27,6 +29,7 @@ class Project protected (input: Operator, projects: java.util.List[_ <: RexNode]
 
   override def close(): Unit = {
     //current = null;
-    input.close();
+//    input.close();
+
   }
 }

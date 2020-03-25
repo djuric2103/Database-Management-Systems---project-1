@@ -6,7 +6,7 @@ import ch.epfl.dias.cs422.helpers.{PrintUtil, SqlPrepare}
 
 object Main {
   def main(args: Array[String]): Unit = {
-    val sql = "select d1.col3 from order_small d1, order_small d2 where d1.col0 = d2.col0";
+    val sql = "SELECT COUNT(*) FROM order_small JOIN lineitem_small ON (order_small.col0 = lineitem_small.col0) WHERE lineitem_small.col0 = 3";
 /*"""select
     l_returnflag,
     l_linestatus,
@@ -38,7 +38,7 @@ order by
     for (i <- 1 to 1) {
       println("Iteration " + i + " :")
       rel.asInstanceOf[Operator].foreach(println)
-//      // equivalent:
+//      equivalent:
 //      rel.open()
 //      breakable {
 //        while (true) {

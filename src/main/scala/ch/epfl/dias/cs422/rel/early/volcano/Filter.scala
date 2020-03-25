@@ -8,7 +8,7 @@ import ch.epfl.dias.cs422.helpers.rel.RelOperator.Tuple
 import org.apache.calcite.rex.RexNode
 
 class Filter protected (input: Operator, condition: RexNode) extends skeleton.Filter[Operator](input, condition) with Operator {
-  var current = input.iterator;
+  lazy val current = input.iterator;
 
   override def open(): Unit = {}
 
@@ -25,6 +25,6 @@ class Filter protected (input: Operator, condition: RexNode) extends skeleton.Fi
 
   override def close(): Unit = {
     //current = null
-    input.close();
+    //input.close();
   }
 }

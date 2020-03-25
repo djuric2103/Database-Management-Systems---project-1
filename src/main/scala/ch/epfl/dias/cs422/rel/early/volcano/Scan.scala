@@ -56,11 +56,12 @@ class Scan protected (cluster: RelOptCluster, traitSet: RelTraitSet, table: RelO
       case ps : PAXStore => getRowPaxStore(ps);
       case _ => null;
     }
+    println(t)
     curr += 1;
     return t;
   }
 
   override def close(): Unit = {
-    curr = 0;
+    //curr = 0;
   }
 }
