@@ -21,11 +21,18 @@ class Sort protected (input: Operator, collation: RelCollation, offset: RexNode,
   def compare(a: Tuple, b: Tuple): Int = {
     for(j <- 0 until collation.getFieldCollations.size()){
       val i = collation.getFieldCollations.get(j);
-      val t : Int = collation.getFieldCollations.get(j).getDirection match {
-        case RelFieldCollation.Direction.ASCENDING | RelFieldCollation.Direction.STRICTLY_ASCENDING | RelFieldCollation.Direction.CLUSTERED => 1;
-        case RelFieldCollation.Direction.DESCENDING | RelFieldCollation.Direction.STRICTLY_DESCENDING => 2;
+      val com = RelFieldCollation.compare(a(i.getFieldIndex).asInstanceOf[Comparable[_]], b(i.getFieldIndex).asInstanceOf[Comparable[_]],42);
+      /*val t : Int = i.getDirection match {
+        case RelFieldCollation.Direction.ASCENDING | RelFieldCollation.Direction.STRICTLY_ASCENDING | RelFieldCollation.Direction.CLUSTERED => com;
+        case RelFieldCollation.Direction.DESCENDING | RelFieldCollation.Direction.STRICTLY_DESCENDING => 0-com;
+      }*/
+      var t = 1;
+      if(i.getDirection.isDescending){
+        t = -1;
       }
-      if(t != 0) return t;
+
+      println(a(i.getFieldIndex) + "\t"+b(i.getFieldIndex) + "\t rezultat "+com);
+      if(com != 0) return t*com;
     }
     return 0;
   }
@@ -36,6 +43,7 @@ class Sort protected (input: Operator, collation: RelCollation, offset: RexNode,
       val row = input.next();
       table(i) =  row;
     }
+
 
     quickSort [Tuple](table : Array[Tuple])((a : Tuple, b : Tuple) =>  compare(a,b))
   }

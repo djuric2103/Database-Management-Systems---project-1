@@ -13,7 +13,6 @@ class Project protected (input: Operator, projects: java.util.List[_ <: RexNode]
   var current = input.iterator;
 
   override def open(): Unit = {
-
   }
 
   lazy val evaluator: Tuple => Tuple = eval(projects.asScala.toIndexedSeq, input.getRowType)
@@ -27,6 +26,6 @@ class Project protected (input: Operator, projects: java.util.List[_ <: RexNode]
   }
 
   override def close(): Unit = {
-    current = null;
+    //current = null;
   }
 }

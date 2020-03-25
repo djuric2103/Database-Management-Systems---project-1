@@ -24,6 +24,6 @@ class Filter protected (input: Operator, condition: RexNode) extends skeleton.Fi
   }
 
   override def close(): Unit = {
-    current = null
+    //current = null
   }
 }

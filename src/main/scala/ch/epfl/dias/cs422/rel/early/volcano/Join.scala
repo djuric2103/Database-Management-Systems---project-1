@@ -26,10 +26,12 @@ class Join(left: Operator,
 
       //println("\t\t"+corr.size);
       for (m <- corr) {
-          joined = joined.appended(m ++ u)
-      };
+        println("inside")
+        val r = u ++ m;
+        joined = joined :+ r;
+      }
     }
-    //println("joined size: "+joined.size);
+    println("joined size: "+joined.size);
   }
 
   def getFields(t : Tuple, keys : IndexedSeq[Int]) : IndexedSeq[Elem] ={
@@ -40,6 +42,7 @@ class Join(left: Operator,
   }
 
   override def next(): Tuple = {
+    println(curr + "\tjoined size" + joined.size);
     if(curr >= joined.size)
       return null;
     curr += 1;
@@ -47,6 +50,7 @@ class Join(left: Operator,
   }
 
   override def close(): Unit = {
+    curr = 0;
     //joined = null;
   }
 }

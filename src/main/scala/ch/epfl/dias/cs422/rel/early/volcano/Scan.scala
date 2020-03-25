@@ -15,10 +15,7 @@ class Scan protected (cluster: RelOptCluster, traitSet: RelTraitSet, table: RelO
 
 
   override def open(): Unit = {
-
   }
-
-
 
   def getRowRowStore(rs: RowStore): Tuple = {
     rs.getRow(curr)

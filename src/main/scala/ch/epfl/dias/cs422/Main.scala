@@ -6,8 +6,8 @@ import ch.epfl.dias.cs422.helpers.{PrintUtil, SqlPrepare}
 
 object Main {
   def main(args: Array[String]): Unit = {
-    val sql = """
-select
+    val sql = "select d1.col3 from order_small d1, order_small d2 where d1.col0 = d2.col0";
+/*"""select
     l_returnflag,
     l_linestatus,
     sum(l_quantity) as sum_qty,
@@ -29,13 +29,13 @@ order by
     l_returnflag,
     l_linestatus
       """
-
+*/
     val prep = SqlPrepare(Factories.VOLCANO_INSTANCE, "rowstore")
     val rel = prep.prepare(sql)
 
     PrintUtil.printTree(rel)
 
-    for (i <- 1 to 10) {
+    for (i <- 1 to 2) {
       println("Iteration " + i + " :")
       rel.asInstanceOf[Operator].foreach(println)
 //      // equivalent:
