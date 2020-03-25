@@ -10,7 +10,8 @@ import org.apache.calcite.rex.RexNode
 class Filter protected (input: Operator, condition: RexNode) extends skeleton.Filter[Operator](input, condition) with Operator {
   lazy val current = input.iterator;
 
-  override def open(): Unit = {}
+  override def open(): Unit = {
+  }
 
   lazy val e: Tuple => Any = eval(condition, input.getRowType)
 
@@ -18,6 +19,7 @@ class Filter protected (input: Operator, condition: RexNode) extends skeleton.Fi
     while(current.hasNext){
       val tup = current.next();
       if(e(tup) == true)
+        //println(tup)
         return tup;
     }
     return null;

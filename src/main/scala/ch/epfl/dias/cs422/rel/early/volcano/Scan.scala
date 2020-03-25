@@ -7,7 +7,7 @@ import ch.epfl.dias.cs422.helpers.store.{ColumnStore, PAXStore, RowStore, Scanna
 import org.apache.calcite.plan.{RelOptCluster, RelOptTable, RelTraitSet}
 
 class Scan protected (cluster: RelOptCluster, traitSet: RelTraitSet, table: RelOptTable, tableToStore: ScannableTable => Store) extends skeleton.Scan[Operator](cluster, traitSet, table) with Operator {
-  protected val scannable: Store = tableToStore(table.unwrap(classOf[ScannableTable]))
+  protected val scannable: Store = tableToStore(table.unwrap(classOf[ScannableTable]));
 
   var curr = 0;
   var currPaxPage = 0;
@@ -15,10 +15,11 @@ class Scan protected (cluster: RelOptCluster, traitSet: RelTraitSet, table: RelO
 
 
   override def open(): Unit = {
+    //println("\n\nScan\n\n")
   }
 
   def getRowRowStore(rs: RowStore): Tuple = {
-    rs.getRow(curr)
+    rs.getRow(curr);
   }
 
   def getRowCoulmnStore(cs: ColumnStore): Tuple = {
@@ -56,12 +57,13 @@ class Scan protected (cluster: RelOptCluster, traitSet: RelTraitSet, table: RelO
       case ps : PAXStore => getRowPaxStore(ps);
       case _ => null;
     }
-    println(t)
+    //println(t)
     curr += 1;
     return t;
   }
 
   override def close(): Unit = {
-    //curr = 0;
+    curr = 0;
+    //println()
   }
 }

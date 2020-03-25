@@ -25,7 +25,7 @@ class Join(left: Operator,
     for(u <- right) {
       mapped.addOne(getFields(u, getRightKeys) -> u);
     }
-
+    var counter = 0;
     for(u <- left) {
       val corr = mapped.get(getFields(u, getLeftKeys));
 
@@ -33,9 +33,11 @@ class Join(left: Operator,
         //println("inside")
         val r = u ++ m;
         joineed = joineed :+ r;
+        counter += 1;
       }
     }
     curr = joineed.iterator;
+    println("COUNTER   "+counter);
   }
 
   def getFields(t : Tuple, keys : IndexedSeq[Int]) : IndexedSeq[Elem] ={

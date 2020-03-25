@@ -13,10 +13,12 @@ import scala.util.Sorting.quickSort
 class Sort protected (input: Operator, collation: RelCollation, offset: RexNode, fetch: RexNode) extends skeleton.Sort[Operator](input, collation, offset, fetch) with Operator {
   var table = new Array[Tuple](input.size);
   var ind = 0;
-  var n = input.size;
+  lazy val current = input.iterator;
 
   val of : Int = evalLiteral(offset).toString.toInt;
   val fet : Int = evalLiteral(fetch).toString.toInt;
+  var n = 0;
+
 
   def compare(a: Tuple, b: Tuple): Int = {
     for(j <- 0 until collation.getFieldCollations.size()){
@@ -38,10 +40,10 @@ class Sort protected (input: Operator, collation: RelCollation, offset: RexNode,
   }
 
   override def open(): Unit = {
-    input.open();
-    for(i <- 0 until n){
-      val row = input.next();
-      table(i) =  row;
+
+    while(current.hasNext){
+      table(n) = current.next();
+      n += 1;
     }
 
 
