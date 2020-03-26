@@ -5,39 +5,35 @@ import ch.epfl.dias.cs422.helpers.rel.RelOperator.Tuple
 import ch.epfl.dias.cs422.helpers.rel.early.volcano.Operator
 import org.apache.calcite.rex.RexNode
 import ch.epfl.dias.cs422.helpers.rel.RelOperator.Elem
-
-import scala.collection.mutable
+import collection.mutable.{ HashMap, MultiMap, Set }
 
 class Join(left: Operator,
            right: Operator,
            condition: RexNode) extends skeleton.Join[Operator](left, right, condition) with Operator {
 
-  var joineed : IndexedSeq[Tuple] = null;
+  var joined = IndexedSeq[Tuple]();
   var curr : Iterator[Tuple] = null;
-  var mapped : mutable.HashMap[IndexedSeq[Elem], Tuple] = null;
-  var a = "asd";
+
+  val mapped = new HashMap[Tuple, Set[Tuple]] with MultiMap[Tuple, Tuple];
+
 
   override def open(): Unit = {
-    joineed = IndexedSeq[Tuple]();
-    mapped = new mutable.HashMap[IndexedSeq[Elem], Tuple];
-
-
-    for(u <- right) {
-      mapped.addOne(getFields(u, getRightKeys) -> u);
+    for(r <- right) {
+      mapped.addBinding(getFields(r, getRightKeys), r);
     }
-    var counter = 0;
-    for(u <- left) {
-      val corr = mapped.get(getFields(u, getLeftKeys));
 
-      for (m <- corr) {
-        //println("inside")
-        val r = u ++ m;
-        joineed = joineed :+ r;
-        counter += 1;
+    for(l <- left) {
+      val value = mapped.get(getFields(l, getLeftKeys));
+      val s : Set[Tuple] = value match {
+        case s : Some[Set[Tuple]] => s.get;
+        case None => Set[Tuple]();
+      }
+      for (r <- s) {
+        val concated = l ++ r;
+        joined = joined :+ concated;
       }
     }
-    curr = joineed.iterator;
-    println("COUNTER   "+counter);
+    curr = joined.iterator;
   }
 
   def getFields(t : Tuple, keys : IndexedSeq[Int]) : IndexedSeq[Elem] ={
@@ -54,6 +50,7 @@ class Join(left: Operator,
   }
 
   override def close(): Unit = {
-
+    curr = null;
+    joined = null;
   }
 }

@@ -15,21 +15,19 @@ class Scan protected (cluster: RelOptCluster, traitSet: RelTraitSet, table: RelO
 
 
   override def open(): Unit = {
-    //println("\n\nScan\n\n")
   }
 
   def getRowRowStore(rs: RowStore): Tuple = {
     rs.getRow(curr);
   }
 
-  def getRowCoulmnStore(cs: ColumnStore): Tuple = {
+  def getRowCoulumnStore(cs: ColumnStore): Tuple = {
     var tuple = IndexedSeq[Elem]();
     val n = table.getRowType.getFieldCount()
 
     for(i <- 0 until n) {
       tuple = tuple :+ cs.getColumn(i)(curr);
     };
-
     return tuple;
   }
 
@@ -52,18 +50,16 @@ class Scan protected (cluster: RelOptCluster, traitSet: RelTraitSet, table: RelO
     if(curr >= scannable.getRowCount)
       return null;
     val t = scannable match {
-      case cs : ColumnStore => getRowCoulmnStore(cs);
+      case cs : ColumnStore => getRowCoulumnStore(cs);
       case rs : RowStore => getRowRowStore(rs);
       case ps : PAXStore => getRowPaxStore(ps);
       case _ => null;
     }
-    //println(t)
     curr += 1;
     return t;
   }
 
   override def close(): Unit = {
     curr = 0;
-    //println()
   }
 }

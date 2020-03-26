@@ -1,64 +1,66 @@
 package ch.epfl.dias.cs422.rel.early.volcano
 
-
 import ch.epfl.dias.cs422.helpers.builder.skeleton
 import ch.epfl.dias.cs422.helpers.rel.RelOperator.Tuple
 import ch.epfl.dias.cs422.helpers.rel.early.volcano.Operator
 import org.apache.calcite.rel.{RelCollation, RelFieldCollation}
 import org.apache.calcite.rex.RexNode
 
-import scala.util.Sorting.quickSort
-
 
 class Sort protected (input: Operator, collation: RelCollation, offset: RexNode, fetch: RexNode) extends skeleton.Sort[Operator](input, collation, offset, fetch) with Operator {
-  var table = new Array[Tuple](input.size);
-  var ind = 0;
-  lazy val current = input.iterator;
+  var table : IndexedSeq[Tuple] = null;
+  var curr : Iterator[Tuple] = null;
 
-  val of : Int = evalLiteral(offset).toString.toInt;
-  val fet : Int = evalLiteral(fetch).toString.toInt;
-  var n = 0;
-
+  def getInt(x : Any): Int ={
+    x match {
+      case i: Int => i
+      case _ => 0
+    }
+  }
 
   def compare(a: Tuple, b: Tuple): Int = {
     for(j <- 0 until collation.getFieldCollations.size()){
       val i = collation.getFieldCollations.get(j);
       val com = RelFieldCollation.compare(a(i.getFieldIndex).asInstanceOf[Comparable[_]], b(i.getFieldIndex).asInstanceOf[Comparable[_]],42);
-      /*val t : Int = i.getDirection match {
-        case RelFieldCollation.Direction.ASCENDING | RelFieldCollation.Direction.STRICTLY_ASCENDING | RelFieldCollation.Direction.CLUSTERED => com;
-        case RelFieldCollation.Direction.DESCENDING | RelFieldCollation.Direction.STRICTLY_DESCENDING => 0-com;
-      }*/
-      var t = 1;
-      if(i.getDirection.isDescending){
-        t = -1;
+
+      val t = i.getDirection match {
+        case RelFieldCollation.Direction.ASCENDING | RelFieldCollation.Direction.STRICTLY_ASCENDING | RelFieldCollation.Direction.CLUSTERED => 1;
+        case RelFieldCollation.Direction.DESCENDING | RelFieldCollation.Direction.STRICTLY_DESCENDING => -1;
       }
 
-      println(a(i.getFieldIndex) + "\t"+b(i.getFieldIndex) + "\t rezultat "+com);
-      if(com != 0) return t*com;
+      if(com != 0) {
+        return t * com;
+      }
     }
     return 0;
   }
 
   override def open(): Unit = {
+    table = input.toIndexedSeq;
 
-    while(current.hasNext){
-      table(n) = current.next();
-      n += 1;
+    val of = if (offset != null) getInt(evalLiteral(offset)) else 0;
+    val fet = if (fetch != null) getInt(evalLiteral(fetch)) else table.size;
+
+    table = table.sortWith(compare(_, _) < 0);
+
+    if(of != 0 || fetch != table.size){
+      var temp = IndexedSeq[Tuple]();
+      for(i <- of until Math.min(table.size, of + fet)){
+        temp = temp :+ table(i);
+      }
+      table = temp;
     }
-
-
-    quickSort [Tuple](table : Array[Tuple])((a : Tuple, b : Tuple) =>  compare(a,b))
+    curr = table.iterator;
   }
 
   override def next(): Tuple = {
-    if(of + ind < n && ind < fet){
-      ind += 1;
-      return table(of + ind  -1);
-    }
+    if(curr.hasNext)
+      return curr.next();
     return null;
   }
 
   override def close(): Unit = {
-    //table = null;
+    curr = null;
+    table = null;
   }
 }

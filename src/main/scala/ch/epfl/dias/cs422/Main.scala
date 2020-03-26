@@ -3,11 +3,13 @@ package ch.epfl.dias.cs422
 import ch.epfl.dias.cs422.helpers.builder.Factories
 import ch.epfl.dias.cs422.helpers.rel.early.volcano.Operator
 import ch.epfl.dias.cs422.helpers.{PrintUtil, SqlPrepare}
+import org.apache.commons.lang3.exception.ExceptionUtils
+import org.slf4j.LoggerFactory
 
 object Main {
   def main(args: Array[String]): Unit = {
-    val sql = "SELECT COUNT(*) FROM order_small JOIN lineitem_small ON (order_small.col0 = lineitem_small.col0) WHERE lineitem_small.col0 = 3";
-/*"""select
+    val sql = "select * from    tpch0_001_lineitem order by\n    l_returnflag,\n    l_linestatus"
+    /*"""select
     l_returnflag,
     l_linestatus,
     sum(l_quantity) as sum_qty,
@@ -30,24 +32,28 @@ order by
     l_linestatus
       """
 */
-    val prep = SqlPrepare(Factories.VOLCANO_INSTANCE, "rowstore")
-    val rel = prep.prepare(sql)
+    try {
+      val prep = SqlPrepare(Factories.VOLCANO_INSTANCE, "rowstore")
+      val rel = prep.prepare(sql)
 
-    PrintUtil.printTree(rel)
+      PrintUtil.printTree(rel)
 
-    for (i <- 1 to 1) {
-      println("Iteration " + i + " :")
-      rel.asInstanceOf[Operator].foreach(println)
-//      equivalent:
-//      rel.open()
-//      breakable {
-//        while (true) {
-//          val n = rel.next()
-//          if (n == Nil) break // It's not safe to call next again after it returns Nil
-//          println(n)
-//        }
-//      }
-//      rel.close()
+      for (i <- 1 to 1) {
+        println("Iteration " + i + " :")
+        rel.asInstanceOf[Operator].foreach(println)
+        //      equivalent:
+        //      rel.open()
+        //      breakable {
+        //        while (true) {
+        //          val n = rel.next()
+        //          if (n == Nil) break // It's not safe to call next again after it returns Nil
+        //          println(n)
+        //        }
+        //      }
+        //      rel.close()
+      }
+    }catch {
+      case x : Exception => x.printStackTrace()
     }
   }
 }
