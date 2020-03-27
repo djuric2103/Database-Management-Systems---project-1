@@ -4,18 +4,23 @@ import ch.epfl.dias.cs422.helpers.builder.skeleton
 import ch.epfl.dias.cs422.helpers.rel.RelOperator.Tuple
 import ch.epfl.dias.cs422.helpers.rel.early.volcano.Operator
 import org.apache.calcite.rex.RexNode
-import ch.epfl.dias.cs422.helpers.rel.RelOperator.Elem
-import collection.mutable.{ HashMap, MultiMap, Set }
+import ch.epfl.dias.cs422.rel.common.Joining
 
 class Join(left: Operator,
            right: Operator,
            condition: RexNode) extends skeleton.Join[Operator](left, right, condition) with Operator {
 
-  var joined = IndexedSeq[Tuple]();
+  var joined : IndexedSeq[Tuple] = null;
   var curr : Iterator[Tuple] = null;
 
-  val mapped = new HashMap[Tuple, Set[Tuple]] with MultiMap[Tuple, Tuple];
+  /*val mapped = new HashMap[Tuple, Set[Tuple]] with MultiMap[Tuple, Tuple];
 
+  def getFields(t : Tuple, keys : IndexedSeq[Int]) : IndexedSeq[Elem] ={
+    var fields = IndexedSeq[Elem]();
+    for(i <- keys)
+      fields = fields :+ t(i);
+    return fields;
+  }
 
   override def open(): Unit = {
     for(r <- right) {
@@ -35,12 +40,10 @@ class Join(left: Operator,
     }
     curr = joined.iterator;
   }
-
-  def getFields(t : Tuple, keys : IndexedSeq[Int]) : IndexedSeq[Elem] ={
-    var fields = IndexedSeq[Elem]();
-    for(i <- keys)
-      fields = fields :+ t(i);
-    return fields;
+*/
+  override def open(): Unit = {
+    joined = Joining.join(left.toIndexedSeq, right.toIndexedSeq, getLeftKeys, getRightKeys);
+    curr = joined.iterator;
   }
 
   override def next(): Tuple = {

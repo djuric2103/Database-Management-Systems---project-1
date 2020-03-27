@@ -1,31 +1,22 @@
-package ch.epfl.dias.cs422.rel.early.volcano
+package ch.epfl.dias.cs422.rel.common
 
-import ch.epfl.dias.cs422.helpers.builder.skeleton
 import ch.epfl.dias.cs422.helpers.rel.RelOperator.{Elem, Tuple}
-import ch.epfl.dias.cs422.helpers.rel.early.volcano.Operator
 import ch.epfl.dias.cs422.helpers.rex.AggregateCall
-import ch.epfl.dias.cs422.rel.common.Aggregating
-import org.apache.calcite.util.ImmutableBitSet
 
 import scala.collection.mutable
 import scala.collection.mutable.{HashMap, MultiMap, Set}
 
-
-
-class Aggregate protected (input: Operator,
-                           groupSet: ImmutableBitSet,
-                           aggCalls: List[AggregateCall]) extends skeleton.Aggregate[Operator](input, groupSet, aggCalls) with Operator {
-
-  //var table : IndexedSeq[Tuple] = null;
-  var output = IndexedSeq[Tuple]();
+object Aggregating {
+  var table : IndexedSeq[Tuple] = null;
+  var output : IndexedSeq[Tuple] = null;
   var curr : Iterator[Tuple] = null;
+  var aggCalls: List[AggregateCall] = null;
 
-  /*
   def reduction(key : IndexedSeq[Elem], subTable : IndexedSeq[Tuple]) = {
     var out_red = IndexedSeq[Elem]();
 
     for(i <- 0 until aggCalls.size){
-      var current = aggEmptyValue(aggCalls(i));
+      var current = aggCalls(i).emptyValue;
       for(j <- 0 until subTable.size){
         if(current == null)
           current = aggCalls(i).getArgument(subTable(j));
@@ -73,31 +64,16 @@ class Aggregate protected (input: Operator,
       val value = mapa.get(k);
       reduction(k, getSubtable(value));
     }
-  }*/
+  }
 
-  override def open(): Unit = {
-    //table = input.toIndexedSeq;
-    output = Aggregating.aggregate(input.toIndexedSeq, groupSet.toArray, aggCalls);
-    /*val key_fields = groupSet.toArray;
-
+  def aggregate(tbl: IndexedSeq[Tuple], key_fields: Array[Int], aCall: List[AggregateCall]): IndexedSeq[Tuple] = {
+    table = tbl;
+    aggCalls = aCall;
+    output = IndexedSeq[Tuple]();
     if(key_fields.size > 0)
       grouping(key_fields);
     else
-      reduction(IndexedSeq[Elem](),table);*/
-    curr = output.iterator;
-  }
-
-
-  override def next(): Tuple = {
-    if(curr.hasNext)
-      return curr.next()
-    return null;
-  }
-
-
-  override def close(): Unit = {
-    curr = null;
-    output = null;
-    //table = null;
+      reduction(IndexedSeq[Elem](),table);
+    return output;
   }
 }

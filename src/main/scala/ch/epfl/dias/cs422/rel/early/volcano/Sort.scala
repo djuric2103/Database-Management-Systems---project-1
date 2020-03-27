@@ -6,6 +6,8 @@ import ch.epfl.dias.cs422.helpers.rel.early.volcano.Operator
 import org.apache.calcite.rel.{RelCollation, RelFieldCollation}
 import org.apache.calcite.rex.RexNode
 
+import ch.epfl.dias.cs422.rel.common.Sorting
+
 
 class Sort protected (input: Operator, collation: RelCollation, offset: RexNode, fetch: RexNode) extends skeleton.Sort[Operator](input, collation, offset, fetch) with Operator {
   var table : IndexedSeq[Tuple] = null;
@@ -18,7 +20,7 @@ class Sort protected (input: Operator, collation: RelCollation, offset: RexNode,
     }
   }
 
-  def compare(a: Tuple, b: Tuple): Int = {
+  /*def compare(a: Tuple, b: Tuple): Int = {
     for(j <- 0 until collation.getFieldCollations.size()){
       val i = collation.getFieldCollations.get(j);
       val com = RelFieldCollation.compare(a(i.getFieldIndex).asInstanceOf[Comparable[_]], b(i.getFieldIndex).asInstanceOf[Comparable[_]],42);
@@ -33,7 +35,7 @@ class Sort protected (input: Operator, collation: RelCollation, offset: RexNode,
       }
     }
     return 0;
-  }
+  }*/
 
   override def open(): Unit = {
     table = input.toIndexedSeq;
@@ -41,15 +43,18 @@ class Sort protected (input: Operator, collation: RelCollation, offset: RexNode,
     val of = if (offset != null) getInt(evalLiteral(offset)) else 0;
     val fet = if (fetch != null) getInt(evalLiteral(fetch)) else table.size;
 
+    table = Sorting.sort(table,collation, of,fet);
+
+/*
     table = table.sortWith(compare(_, _) < 0);
 
-    if(of != 0 || fetch != table.size){
+    if(of != 0 || fet != table.size){
       var temp = IndexedSeq[Tuple]();
       for(i <- of until Math.min(table.size, of + fet)){
         temp = temp :+ table(i);
       }
       table = temp;
-    }
+    }*/
     curr = table.iterator;
   }
 
