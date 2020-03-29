@@ -11,8 +11,8 @@ class Sort protected (input: Operator, collation: RelCollation, offset: RexNode,
   var table : IndexedSeq[Tuple] = null;
   var curr : Iterator[Tuple] = null;
 
-  def getInt(x : Any): Int ={
-    x match {
+  def getInt(x : RexNode): Int ={
+    evalLiteral(x) match {
       case i: Int => i
       case _ => 0
     }
@@ -21,8 +21,8 @@ class Sort protected (input: Operator, collation: RelCollation, offset: RexNode,
   override def open(): Unit = {
     table = BlockConvert.toIndSeq(input.iterator);
 
-    val of = if (offset != null) getInt(evalLiteral(offset)) else 0;
-    val fet = if (fetch != null) getInt(evalLiteral(fetch)) else table.size;
+    val of = if (offset != null) getInt(offset) else 0;
+    val fet = if (fetch != null) getInt(fetch) else table.size;
 
     table = Sorting.sort(table,collation, of,fet);
     curr = table.iterator;

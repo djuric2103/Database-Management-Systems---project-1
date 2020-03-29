@@ -1,18 +1,12 @@
-package ch.epfl.dias.cs422.rel.early.operatoratatime
+package ch.epfl.dias.cs422.rel.common
 
-import ch.epfl.dias.cs422.helpers.builder.skeleton
 import ch.epfl.dias.cs422.helpers.rel.RelOperator.{Column, Elem, PAXPage, Tuple}
-import ch.epfl.dias.cs422.helpers.rel.early.operatoratatime.Operator
 import ch.epfl.dias.cs422.helpers.store.{ColumnStore, PAXStore, RowStore, ScannableTable, Store}
-import ch.epfl.dias.cs422.rel.common.ScanOperatorAtTheTime
-import ch.epfl.dias.cs422.rel.common.ScanOperatorAtTheTime.table
-import com.sun.org.apache.xerces.internal.impl.XMLDocumentFragmentScannerImpl
-import org.apache.calcite.plan.{RelOptCluster, RelOptTable, RelTraitSet}
-import ch.epfl.dias.cs422.rel.early
-import ch.epfl.dias.cs422.rel.early.volcano
+import org.apache.calcite.plan.RelOptTable
 
-class Scan protected(cluster: RelOptCluster, traitSet: RelTraitSet, table: RelOptTable, tableToStore: ScannableTable => Store) extends skeleton.Scan[Operator](cluster, traitSet, table) with Operator {
-/*
+object ScanOperatorAtTheTime {
+  var table: RelOptTable = null;
+
   def getTableColumnStore(cs: ColumnStore): IndexedSeq[Column] = {
     var tbl = IndexedSeq[Column]();
     if (cs.getRowCount == 0) return tbl;
@@ -63,8 +57,9 @@ class Scan protected(cluster: RelOptCluster, traitSet: RelTraitSet, table: RelOp
     return output;
   }
 
-  override def execute(): IndexedSeq[Column] = {
-    val store = tableToStore(table.unwrap(classOf[ScannableTable]))
+  def scan(tbl: RelOptTable, tableToStore: ScannableTable => Store): IndexedSeq[Column] = {
+    val store = tableToStore(tbl.unwrap(classOf[ScannableTable]))
+    table = tbl;
 
     return store match {
       case cs: ColumnStore => getTableColumnStore(cs);
@@ -72,11 +67,6 @@ class Scan protected(cluster: RelOptCluster, traitSet: RelTraitSet, table: RelOp
       case ps: PAXStore => getTablePaxStore(ps);
       case _ => null;
     }
+  }
 
-    return ScanOperatorAtTheTime.scan(table, tableToStore);
-  }
-*/
-  override def execute(): IndexedSeq[Column] = {
-    return ScanOperatorAtTheTime.scan(table, tableToStore);
-  }
 }

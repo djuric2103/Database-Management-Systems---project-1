@@ -27,4 +27,22 @@ class Join(left: Operator,
     curr = null;
     joined = null;
   }
+  /*var l_iter : Iterator[Block] = null;
+  var r_iter : Iterator[Block] = null;
+
+  override def open(): Unit = {
+    l_iter = left.iterator;
+    r_iter = right.iterator;
+  }
+
+  override def next(): Block = {
+    if(!l_iter.hasNext || r_iter.hasNext) return null;
+    return Joining.join(l_iter.next(), r_iter.next(), getLeftKeys, getRightKeys);
+  }
+
+  override def close(): Unit = {
+
+  }
+
+   */
 }

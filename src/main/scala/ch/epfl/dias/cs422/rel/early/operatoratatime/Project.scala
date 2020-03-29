@@ -13,9 +13,7 @@ import scala.jdk.CollectionConverters._
 class Project protected(input: Operator, projects: util.List[_ <: RexNode], rowType: RelDataType) extends skeleton.Project[Operator](input, projects, rowType) with Operator {
   override def execute(): IndexedSeq[Column] = {
     val table : IndexedSeq[Tuple]= input.toIndexedSeq.transpose;
-
     val evaluator: Tuple => Tuple = eval(projects.asScala.toIndexedSeq, input.getRowType);
-
     var output = IndexedSeq[Tuple]();
 
     for(i <- 0 until table.size){
