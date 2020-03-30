@@ -11,11 +11,9 @@ object ScanOperatorAtTheTime {
   def getTableColumnStore(cs: ColumnStore): IndexedSeq[Column] = {
     var tbl = IndexedSeq[Column]();
     if (cs.getRowCount == 0) return tbl;
-
     for (i <- 0 until table.getRowType.getFieldCount()) {
       tbl = tbl :+ cs.getColumn(i);
     }
-
     return tbl;
   }
 

@@ -28,7 +28,7 @@ class Aggregate protected (input: Operator,
     key_fields = groupSet.toArray;
     if(key_fields.size == 0){
       reduction = true;
-      var reductionFirstCall = true;
+      reductionFirstCall = true;
     }else{
       mapa = Aggregating.grouping(table, key_fields);
       keys = mapa.keySet.toIndexedSeq;
