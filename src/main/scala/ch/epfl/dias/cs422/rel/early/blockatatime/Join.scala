@@ -4,45 +4,55 @@ import ch.epfl.dias.cs422.helpers.builder.skeleton
 import ch.epfl.dias.cs422.helpers.rel.RelOperator.{Block, Tuple}
 import ch.epfl.dias.cs422.helpers.rel.early.blockatatime.Operator
 import ch.epfl.dias.cs422.rel.common.Joining
+import ch.epfl.dias.cs422.rel.common.Joining.getFields
 import org.apache.calcite.rex.RexNode
+
+import scala.collection.mutable
+import scala.collection.mutable.{HashMap, MultiMap, Set}
 
 class Join(left: Operator,
            right: Operator,
            condition: RexNode) extends skeleton.Join[Operator](left, right, condition) with Operator {
 
-  var joined : IndexedSeq[Tuple] = null;
-  var curr : Iterator[Tuple] = null;
+  var tabLeft : IndexedSeq[Tuple] = null;
+  var mapped : HashMap[Tuple, Set[Tuple]] with MultiMap[Tuple, Tuple] = null;
+  var pairs : IndexedSeq[Tuple] = null;
+  var currL = 0;
+  var currPairs = 0;
 
   override def open(): Unit = {
-    joined = Joining.join(BlockConvert.toIndSeq(left.iterator), BlockConvert.toIndSeq(right.iterator), getLeftKeys, getRightKeys);
-
-    curr = joined.iterator;
+    tabLeft = BlockConvert.toIndSeq(left.iterator);
+    mapped = Joining.mapp(BlockConvert.toIndSeq(right.iterator), getRightKeys);
+    pairs = IndexedSeq[Tuple]();
+    currL = 0;
+    currPairs = 0;
   }
 
   override def next(): Block = {
-    return BlockConvert.getNext(curr, blockSize);
+    var block = IndexedSeq[Tuple]();
+    while (block.size < blockSize) {
+      if(currL >= tabLeft.size && currPairs >= pairs.size){
+        if(block.size == 0) return null;
+        return block;
+      }
+      if (currPairs >= pairs.size) {
+        pairs = Joining.getPairs(mapped, tabLeft(currL), getLeftKeys).toIndexedSeq;
+        currL += 1;
+        currPairs = 0;
+      } else {
+        val tup: Tuple = tabLeft(currL - 1) ++ pairs(currPairs);
+        block = block :+ tup;
+        currPairs += 1;
+      }
+    }
+    return block;
   }
 
   override def close(): Unit = {
-    curr = null;
-    joined = null;
+    tabLeft = null;
+    mapped = null;
+    pairs = IndexedSeq[Tuple]();
+    currL = 0;
+    currPairs = 0;
   }
-  /*var l_iter : Iterator[Block] = null;
-  var r_iter : Iterator[Block] = null;
-
-  override def open(): Unit = {
-    l_iter = left.iterator;
-    r_iter = right.iterator;
-  }
-
-  override def next(): Block = {
-    if(!l_iter.hasNext || r_iter.hasNext) return null;
-    return Joining.join(l_iter.next(), r_iter.next(), getLeftKeys, getRightKeys);
-  }
-
-  override def close(): Unit = {
-
-  }
-
-   */
 }

@@ -5,55 +5,47 @@ import ch.epfl.dias.cs422.helpers.rel.RelOperator.Tuple
 import ch.epfl.dias.cs422.helpers.rel.early.volcano.Operator
 import org.apache.calcite.rex.RexNode
 import ch.epfl.dias.cs422.rel.common.Joining
+import ch.epfl.dias.cs422.rel.early.blockatatime.BlockConvert
+
+import scala.collection.mutable.{HashMap, MultiMap, Set}
 
 class Join(left: Operator,
            right: Operator,
            condition: RexNode) extends skeleton.Join[Operator](left, right, condition) with Operator {
 
-  var joined : IndexedSeq[Tuple] = null;
-  var curr : Iterator[Tuple] = null;
-
-  /*val mapped = new HashMap[Tuple, Set[Tuple]] with MultiMap[Tuple, Tuple];
-
-  def getFields(t : Tuple, keys : IndexedSeq[Int]) : IndexedSeq[Elem] ={
-    var fields = IndexedSeq[Elem]();
-    for(i <- keys)
-      fields = fields :+ t(i);
-    return fields;
-  }
+  var tabLeft : IndexedSeq[Tuple] = null;
+  var mapped : HashMap[Tuple, Set[Tuple]] with MultiMap[Tuple, Tuple] = null;
+  var pairs : IndexedSeq[Tuple] = null;
+  var currL = 0;
+  var currPairs = 0;
 
   override def open(): Unit = {
-    for(r <- right) {
-      mapped.addBinding(getFields(r, getRightKeys), r);
-    }
-
-    for(l <- left) {
-      val value = mapped.get(getFields(l, getLeftKeys));
-      val s : Set[Tuple] = value match {
-        case s : Some[Set[Tuple]] => s.get;
-        case None => Set[Tuple]();
-      }
-      for (r <- s) {
-        val concated = l ++ r;
-        joined = joined :+ concated;
-      }
-    }
-    curr = joined.iterator;
-  }
-*/
-  override def open(): Unit = {
-    joined = Joining.join(left.toIndexedSeq, right.toIndexedSeq, getLeftKeys, getRightKeys);
-    curr = joined.iterator;
+    tabLeft = left.iterator.toIndexedSeq;
+    mapped = Joining.mapp(right.iterator.toIndexedSeq, getRightKeys);
+    pairs = IndexedSeq[Tuple]();
+    currL = 0;
+    currPairs = 0;
   }
 
   override def next(): Tuple = {
-    if(curr.hasNext)
-      return curr.next();
+    while(currL < tabLeft.size || currPairs < pairs.size) {
+      if (currPairs >= pairs.size) {
+        pairs = Joining.getPairs(mapped, tabLeft(currL), getLeftKeys).toIndexedSeq;
+        currL += 1;
+        currPairs = 0;
+      }else{
+        currPairs += 1;
+        return tabLeft(currL - 1) ++ pairs(currPairs - 1);
+      }
+    }
     return null;
   }
 
   override def close(): Unit = {
-    curr = null;
-    joined = null;
+    tabLeft = null;
+    mapped = null;
+    pairs = IndexedSeq[Tuple]();
+    currL = 0;
+    currPairs = 0;
   }
 }

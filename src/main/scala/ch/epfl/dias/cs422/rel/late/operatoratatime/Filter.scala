@@ -7,14 +7,18 @@ import ch.epfl.dias.cs422.helpers.rel.late.operatoratatime.Operator
 import org.apache.calcite.rex.RexNode
 
 class Filter protected(input: Operator, condition: RexNode) extends skeleton.Filter[Operator](input, condition) with Operator {
-  override def execute(): IndexedSeq[Column] = {
-    val table = input.toIndexedSeq.transpose;
+  lazy val vids : IndexedSeq[Column] = {
+    val table = input.execute();
     var vids = IndexedSeq[Column]();
     for(i <- 0 until table.size){
       if(e(table(i)) == true){
-        vids = vids :+ IndexedSeq(i);
+        vids = vids :+ table(i);
       }
     }
+    vids;
+  }
+
+  override def execute(): IndexedSeq[Column] = {
     return vids;
   }
 

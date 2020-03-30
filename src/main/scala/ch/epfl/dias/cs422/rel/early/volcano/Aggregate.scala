@@ -15,89 +15,50 @@ import scala.collection.mutable.{HashMap, MultiMap, Set}
 class Aggregate protected (input: Operator,
                            groupSet: ImmutableBitSet,
                            aggCalls: List[AggregateCall]) extends skeleton.Aggregate[Operator](input, groupSet, aggCalls) with Operator {
-
-  //var table : IndexedSeq[Tuple] = null;
-  var output = IndexedSeq[Tuple]();
-  var curr : Iterator[Tuple] = null;
-
-  /*
-  def reduction(key : IndexedSeq[Elem], subTable : IndexedSeq[Tuple]) = {
-    var out_red = IndexedSeq[Elem]();
-
-    for(i <- 0 until aggCalls.size){
-      var current = aggEmptyValue(aggCalls(i));
-      for(j <- 0 until subTable.size){
-        if(current == null)
-          current = aggCalls(i).getArgument(subTable(j));
-        else
-          current = aggCalls(i).reduce(current, aggCalls(i).getArgument(subTable(j)));
-      }
-      out_red = out_red :+ current;
-    }
-    val line : Tuple = key ++ out_red;
-    output = output :+ line;
-  }
-
-  def getKey(key_fields: Array[Int], tuple: Tuple): Tuple = {
-    var key = IndexedSeq[Elem]();
-    for (i <- 0 until key_fields.size) {
-      key = key :+ tuple(key_fields(i));
-    }
-    return key;
-  }
-
-
-  def getSubtable(value: Option[mutable.Set[Int]]): IndexedSeq[Tuple] = {
-    var subTable = IndexedSeq[Tuple]();
-
-    val s : Set[Int] = value match {
-      case s : Some[Set[Int]] => s.get;
-      case None => Set[Int]();
-    }
-
-    for(i <- s){
-      subTable = subTable :+ table(i);
-    }
-    return subTable;
-  }
-
-  def grouping(key_fields: Array[Int]) = {
-    val mapa = new HashMap[Tuple, Set[Int]] with MultiMap[Tuple, Int];
-
-    for(i <- 0 until table.size){
-      val key = getKey(key_fields, table(i));
-      mapa.addBinding(key, i);
-    }
-
-    for(k <- mapa.keySet){
-      val value = mapa.get(k);
-      reduction(k, getSubtable(value));
-    }
-  }*/
+  var table : IndexedSeq[Tuple] = null;
+  var key_fields : Array[Int] = null;
+  var reduction = false;
+  var reductionFirstCall = true;
+  var mapa : HashMap[Tuple, Set[Int]] with MultiMap[Tuple, Int] = null;
+  var keys : IndexedSeq[Tuple] = null;
+  var currentKey = 0;
 
   override def open(): Unit = {
-    //table = input.toIndexedSeq;
-    output = Aggregating.aggregate(input.toIndexedSeq, groupSet.toArray, aggCalls);
-    /*val key_fields = groupSet.toArray;
-
-    if(key_fields.size > 0)
-      grouping(key_fields);
-    else
-      reduction(IndexedSeq[Elem](),table);*/
-    curr = output.iterator;
+    table = input.toIndexedSeq;
+    key_fields = groupSet.toArray;
+    if(key_fields.size == 0){
+      reduction = true;
+      var reductionFirstCall = true;
+    }else{
+      mapa = Aggregating.grouping(table, key_fields);
+      keys = mapa.keySet.toIndexedSeq;
+      currentKey = 0;
+    }
   }
 
 
   override def next(): Tuple = {
-    if(curr.hasNext)
-      return curr.next()
-    return null;
+    if(reduction){
+      if(reductionFirstCall){
+        reductionFirstCall = false;
+        return Aggregating.reduction(table, aggCalls);
+      }
+      return null;
+    }
+    if(currentKey >= keys.size) return null;
+    currentKey += 1;
+    val group = mapa.get(keys(currentKey - 1));
+    return keys(currentKey - 1) ++ Aggregating.reduction(Aggregating.getSubtable(table, group), aggCalls);
   }
 
 
   override def close(): Unit = {
-    curr = null;
-    output = null;
-    //table = null;
+    var table = null;
+    var key_fields = null;
+    var reduction = false;
+    var reductionFirstCall = true;
+    var mapa = null;
+    var keys = null;
+    var currentKey = 0;
   }
 }

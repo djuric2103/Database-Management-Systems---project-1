@@ -9,12 +9,13 @@ import ch.epfl.dias.cs422.rel.common.ScanOperatorAtTheTime
 import org.apache.calcite.plan.{RelOptCluster, RelOptTable, RelTraitSet}
 
 class Scan protected(cluster: RelOptCluster, traitSet: RelTraitSet, table: RelOptTable, tableToStore: ScannableTable => Store) extends skeleton.Scan[Operator](cluster, traitSet, table) with Operator {
+  lazy val vids : IndexedSeq[Column] = {
+    val store = tableToStore(table.unwrap(classOf[ScannableTable]));
+    for(i <- 0L until store.getRowCount) yield IndexedSeq(i);
+  }
 
   override def execute(): IndexedSeq[Column] = {
-    val store = tableToStore(table.unwrap(classOf[ScannableTable]))
-    /*val vids : IndexedSeq[Column] = for(i <- 0L until store.getRowCount) yield IndexedSeq(i);
-    return vids;*/
-    return for(i <- 0L until store.getRowCount) yield IndexedSeq(i);
+    vids;
   }
 
   private lazy val evals = {

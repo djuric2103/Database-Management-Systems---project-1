@@ -13,7 +13,6 @@ class Scan protected (cluster: RelOptCluster, traitSet: RelTraitSet, table: RelO
   var currPaxPage = 0;
   var currPaxInd = 0;
 
-
   override def open(): Unit = {
   }
 
@@ -50,8 +49,8 @@ class Scan protected (cluster: RelOptCluster, traitSet: RelTraitSet, table: RelO
     if(curr >= scannable.getRowCount)
       return null;
     val t = scannable match {
-      case cs : ColumnStore => getRowCoulumnStore(cs);
       case rs : RowStore => getRowRowStore(rs);
+      case cs : ColumnStore => getRowCoulumnStore(cs);
       case ps : PAXStore => getRowPaxStore(ps);
       case _ => null;
     }

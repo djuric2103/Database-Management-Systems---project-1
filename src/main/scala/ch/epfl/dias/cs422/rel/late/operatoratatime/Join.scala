@@ -10,7 +10,7 @@ import org.apache.calcite.rex.RexNode
 import scala.collection.mutable.{HashMap, MultiMap, Set}
 
 class Join(left: Operator, right: Operator, condition: RexNode) extends skeleton.Join[Operator](left, right, condition) with Operator {
-  override def execute(): IndexedSeq[Column] = {
+  lazy val vids : IndexedSeq[Column] = {
     var joined = IndexedSeq[Column]();
 
     val mapped = new HashMap[Tuple, Set[Column]] with MultiMap[Tuple, Column];
@@ -18,21 +18,26 @@ class Join(left: Operator, right: Operator, condition: RexNode) extends skeleton
     val leftLazyEvaluator = left.evaluators();
     val rightLazyEvaluator = right.evaluators();
 
-    for(vid <- left.toIndexedSeq) {
-      mapped.addBinding(Joining.getFields(leftLazyEvaluator.apply(vid), getLeftKeys), vid);
+    for (vid <- right.toIndexedSeq) {
+      mapped.addBinding(Joining.getFields(rightLazyEvaluator.apply(vid), getRightKeys), vid);
     };
 
-    for(rightVid <- right.toIndexedSeq){
-      val value = mapped.get(Joining.getFields(rightLazyEvaluator.apply(rightVid), getRightKeys));
+    for (leftVid <- left.toIndexedSeq) {
+      val value = mapped.get(Joining.getFields(leftLazyEvaluator.apply(leftVid), getLeftKeys));
       value match {
         case s: Some[Set[Column]] => {
-          for(leftVid <- s.get){
+          for (rightVid <- s.get) {
             joined = joined :+ IndexedSeq(leftVid, rightVid);
           }
         }
+        case _ => ;
       }
     }
-    return joined;
+    joined;
+  }
+
+  override def execute(): IndexedSeq[Column] = {
+    return vids;
   }
 
   private lazy val evals = lazyEval(left.evaluators(), right.evaluators(), left.getRowType, right.getRowType)

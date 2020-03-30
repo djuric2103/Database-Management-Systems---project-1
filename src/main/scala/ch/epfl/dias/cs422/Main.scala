@@ -1,14 +1,14 @@
 package ch.epfl.dias.cs422
 
 import ch.epfl.dias.cs422.helpers.builder.Factories
-import ch.epfl.dias.cs422.helpers.rel.early.volcano.Operator
+import ch.epfl.dias.cs422.helpers.rel.late.operatoratatime.Operator
 import ch.epfl.dias.cs422.helpers.{PrintUtil, SqlPrepare}
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.slf4j.LoggerFactory
 
 object Main {
   def main(args: Array[String]): Unit = {
-    val sql = "select * from    tpch0_001_lineitem order by\n    l_returnflag,\n    l_linestatus"
+    val sql = "select MAX(col1) from order_small"
     /*"""select
     l_returnflag,
     l_linestatus,
@@ -33,7 +33,7 @@ order by
       """
 */
     try {
-      val prep = SqlPrepare(Factories.VOLCANO_INSTANCE, "rowstore")
+      val prep = SqlPrepare(Factories.LAZY_OPERATOR_AT_A_TIME_INSTANCE, "rowstore")
       val rel = prep.prepare(sql)
 
       PrintUtil.printTree(rel)

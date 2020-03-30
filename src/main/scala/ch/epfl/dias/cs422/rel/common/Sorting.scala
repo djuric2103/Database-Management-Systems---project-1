@@ -22,16 +22,19 @@ object Sorting{
     return 0;
   }
 
-  def sort(tbl: IndexedSeq[Tuple], collation: RelCollation, offset: Int, fetch: Int): IndexedSeq[Tuple] = {
-    var table = tbl.sortWith(compare(collation,_, _) < 0);
-
-    if (offset != 0 || fetch != table.size) {
-      var temp = IndexedSeq[Tuple]();
-      for (i <- offset until Math.min(table.size, offset + fetch)) {
-        temp = temp :+ table(i);
+  def crop(tbl: IndexedSeq[IndexedSeq[Any]], offset : Int, fetch : Int) : IndexedSeq[IndexedSeq[Any]] = {
+    if (offset != 0 || fetch != tbl.size) {
+      var temp = IndexedSeq[IndexedSeq[Any]]();
+      for (i <- offset until Math.min(tbl.size, offset + fetch)) {
+        temp = temp :+ tbl(i);
       }
-      table = temp;
+      return temp;
     }
-    return table;
+    return tbl;
+  }
+
+  def sort(tbl: IndexedSeq[Tuple], collation: RelCollation, offset: Int, fetch: Int): IndexedSeq[Tuple] = {
+    val table = tbl.sortWith(compare(collation,_, _) < 0);
+    return crop(table, offset, fetch);
   }
 }
