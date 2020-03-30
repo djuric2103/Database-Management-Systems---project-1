@@ -4,7 +4,7 @@ import ch.epfl.dias.cs422.helpers.rel.RelOperator.Tuple
 import org.apache.calcite.rel.{RelCollation, RelFieldCollation}
 
 
-object Sorting{
+object Sorting {
   def compare(collation: RelCollation, a: Tuple, b: Tuple): Int = {
     for (j <- 0 until collation.getFieldCollations.size()) {
       val i = collation.getFieldCollations.get(j);
@@ -22,7 +22,7 @@ object Sorting{
     return 0;
   }
 
-  def crop(tbl: IndexedSeq[IndexedSeq[Any]], offset : Int, fetch : Int) : IndexedSeq[IndexedSeq[Any]] = {
+  def crop(tbl: IndexedSeq[IndexedSeq[Any]], offset: Int, fetch: Int): IndexedSeq[IndexedSeq[Any]] = {
     if (offset != 0 || fetch != tbl.size) {
       var temp = IndexedSeq[IndexedSeq[Any]]();
       for (i <- offset until Math.min(tbl.size, offset + fetch)) {
@@ -34,7 +34,7 @@ object Sorting{
   }
 
   def sort(tbl: IndexedSeq[Tuple], collation: RelCollation, offset: Int, fetch: Int): IndexedSeq[Tuple] = {
-    val table = tbl.sortWith(compare(collation,_, _) < 0);
+    val table = tbl.sortWith(compare(collation, _, _) < 0);
     return crop(table, offset, fetch);
   }
 }

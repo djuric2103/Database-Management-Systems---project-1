@@ -4,19 +4,17 @@ import ch.epfl.dias.cs422.helpers.builder.skeleton
 import ch.epfl.dias.cs422.helpers.rel.RelOperator.{Block, Tuple}
 import ch.epfl.dias.cs422.helpers.rel.early.blockatatime.Operator
 import ch.epfl.dias.cs422.rel.common.Joining
-import ch.epfl.dias.cs422.rel.common.Joining.getFields
 import org.apache.calcite.rex.RexNode
 
-import scala.collection.mutable
 import scala.collection.mutable.{HashMap, MultiMap, Set}
 
 class Join(left: Operator,
            right: Operator,
            condition: RexNode) extends skeleton.Join[Operator](left, right, condition) with Operator {
 
-  var tabLeft : IndexedSeq[Tuple] = null;
-  var mapped : HashMap[Tuple, Set[Tuple]] with MultiMap[Tuple, Tuple] = null;
-  var pairs : IndexedSeq[Tuple] = null;
+  var tabLeft: IndexedSeq[Tuple] = null;
+  var mapped: HashMap[Tuple, Set[Tuple]] with MultiMap[Tuple, Tuple] = null;
+  var pairs: IndexedSeq[Tuple] = null;
   var currL = 0;
   var currPairs = 0;
 
@@ -31,8 +29,8 @@ class Join(left: Operator,
   override def next(): Block = {
     var block = IndexedSeq[Tuple]();
     while (block.size < blockSize) {
-      if(currL >= tabLeft.size && currPairs >= pairs.size){
-        if(block.size == 0) return null;
+      if (currL >= tabLeft.size && currPairs >= pairs.size) {
+        if (block.size == 0) return null;
         return block;
       }
       if (currPairs >= pairs.size) {

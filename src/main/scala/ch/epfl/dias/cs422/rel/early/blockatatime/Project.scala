@@ -11,7 +11,7 @@ import org.apache.calcite.rex.RexNode
 import scala.jdk.CollectionConverters._
 
 
-class Project protected (input: Operator, projects: util.List[_ <: RexNode], rowType: RelDataType) extends skeleton.Project[Operator](input, projects, rowType) with Operator {
+class Project protected(input: Operator, projects: util.List[_ <: RexNode], rowType: RelDataType) extends skeleton.Project[Operator](input, projects, rowType) with Operator {
   lazy val current = input.iterator;
 
   override def open(): Unit = {
@@ -20,9 +20,9 @@ class Project protected (input: Operator, projects: util.List[_ <: RexNode], row
   lazy val evaluator: Tuple => Tuple = eval(projects.asScala.toIndexedSeq, input.getRowType)
 
   override def next(): Block = {
-    if(!current.hasNext) return null;
+    if (!current.hasNext) return null;
     var output = IndexedSeq[Tuple]();
-    for(tup <- current.next()){
+    for (tup <- current.next()) {
       output = output :+ evaluator(tup);
     }
     return output;

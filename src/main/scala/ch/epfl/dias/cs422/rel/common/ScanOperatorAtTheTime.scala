@@ -1,7 +1,7 @@
 package ch.epfl.dias.cs422.rel.common
 
-import ch.epfl.dias.cs422.helpers.rel.RelOperator.{Column, Elem, PAXPage, Tuple}
-import ch.epfl.dias.cs422.helpers.store.{ColumnStore, PAXStore, RowStore, ScannableTable, Store}
+import ch.epfl.dias.cs422.helpers.rel.RelOperator.{Column, Elem, Tuple}
+import ch.epfl.dias.cs422.helpers.store._
 import org.apache.calcite.plan.RelOptTable
 
 
@@ -55,14 +55,14 @@ object ScanOperatorAtTheTime {
     return output;
   }*/
 
-  def getTablePaxStore(ps: PAXStore): IndexedSeq[Column] ={
+  def getTablePaxStore(ps: PAXStore): IndexedSeq[Column] = {
     val elemPerMiniPage = 4;
     val numOfPages = ps.getRowCount.asInstanceOf[Int] / elemPerMiniPage + (if (ps.getRowCount.asInstanceOf[Int] % elemPerMiniPage == 0) 0 else 1);
     val numOfFields = table.getRowType.getFieldCount();
     var output = IndexedSeq[Column]();
-    for(i <- 0 until numOfFields){
+    for (i <- 0 until numOfFields) {
       var field = IndexedSeq[Elem]();
-      for(j <- 0 until numOfPages){
+      for (j <- 0 until numOfPages) {
         field = field ++ ps.getPAXPage(j)(i);
       }
       output = output :+ field;
