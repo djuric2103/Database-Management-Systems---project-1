@@ -9,7 +9,7 @@ import ch.epfl.dias.cs422.rel.common.{Aggregating, ScanOperatorAtTheTime}
 import org.apache.calcite.util.ImmutableBitSet
 
 import scala.collection.mutable
-import scala.collection.mutable.{HashMap, MultiMap, Set}
+import scala.collection.mutable.{HashMap, ListBuffer, MultiMap, Set}
 
 class Aggregate protected(input: Operator, groupSet: ImmutableBitSet, aggCalls: List[AggregateCall]) extends skeleton.Aggregate[Operator](input, groupSet, aggCalls) with Operator {
   lazy val table = input.execute().map(vid => input.evaluators()(vid));
@@ -26,9 +26,7 @@ class Aggregate protected(input: Operator, groupSet: ImmutableBitSet, aggCalls: 
     }
   }
 
-  override def execute(): IndexedSeq[Column] = {
-    return vids;
-  }
+  override def execute(): IndexedSeq[Column] = vids
 
   private lazy val evals = {
     var output = IndexedSeq[Tuple]();
@@ -45,7 +43,7 @@ class Aggregate protected(input: Operator, groupSet: ImmutableBitSet, aggCalls: 
     for(i <- 0 until n){
       list = list :+ (vid => output(vid.asInstanceOf[Int])(i));
     }
-    new LazyEvaluatorAccess(list);
+    new LazyEvaluatorAccess(list.toList);
   }
   override def evaluators(): LazyEvaluatorAccess = evals
 }

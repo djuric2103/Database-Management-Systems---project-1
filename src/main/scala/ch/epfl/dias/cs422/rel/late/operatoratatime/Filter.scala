@@ -18,13 +18,11 @@ class Filter protected(input: Operator, condition: RexNode) extends skeleton.Fil
     vids;
   }
 
-  override def execute(): IndexedSeq[Column] = {
-    return vids;
-  }
+  override def execute(): IndexedSeq[Column] = vids
 
   lazy val e: Evaluator = eval(condition, input.getRowType, input.evaluators())
 
-  override def evaluators(): LazyEvaluatorRoot = {
-    input.evaluators();
-  }
+  lazy val evals = input.evaluators();
+
+  override def evaluators(): LazyEvaluatorRoot = evals
 }

@@ -36,9 +36,7 @@ class Join(left: Operator, right: Operator, condition: RexNode) extends skeleton
     joined;
   }
 
-  override def execute(): IndexedSeq[Column] = {
-    return vids;
-  }
+  override def execute(): IndexedSeq[Column] = vids
 
   private lazy val evals = lazyEval(left.evaluators(), right.evaluators(), left.getRowType, right.getRowType)
 

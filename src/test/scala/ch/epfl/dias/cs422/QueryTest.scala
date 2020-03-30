@@ -165,17 +165,17 @@ class QueryTest {
   private[cs422] def tests = {
     val p = getResourceAsPath("/tests", getClass)
     List(
-      //"volcano (row store)" -> SqlPrepare(Factories.VOLCANO_INSTANCE, "rowstore"),
-      //"operator-at-a-time (row store)" -> SqlPrepare(Factories.OPERATOR_AT_A_TIME_INSTANCE, "rowstore"),
-      //"block-at-a-time (row store)" -> SqlPrepare(Factories.BLOCKATATIME_INSTANCE, "rowstore"),
+      "volcano (row store)" -> SqlPrepare(Factories.VOLCANO_INSTANCE, "rowstore"),
+      "operator-at-a-time (row store)" -> SqlPrepare(Factories.OPERATOR_AT_A_TIME_INSTANCE, "rowstore"),
+      "block-at-a-time (row store)" -> SqlPrepare(Factories.BLOCKATATIME_INSTANCE, "rowstore"),
       "late-operator-at-a-time (row store)" -> SqlPrepare(Factories.LAZY_OPERATOR_AT_A_TIME_INSTANCE, "rowstore"),
-      //"volcano (column store)" -> SqlPrepare(Factories.VOLCANO_INSTANCE, "columnstore"),
-      //"operator-at-a-time (column store)" -> SqlPrepare(Factories.OPERATOR_AT_A_TIME_INSTANCE, "columnstore"),
-      //"block-at-a-time (column store)" -> SqlPrepare(Factories.BLOCKATATIME_INSTANCE, "columnstore"),
+      "volcano (column store)" -> SqlPrepare(Factories.VOLCANO_INSTANCE, "columnstore"),
+      "operator-at-a-time (column store)" -> SqlPrepare(Factories.OPERATOR_AT_A_TIME_INSTANCE, "columnstore"),
+      "block-at-a-time (column store)" -> SqlPrepare(Factories.BLOCKATATIME_INSTANCE, "columnstore"),
       "late-operator-at-a-time (column store)" -> SqlPrepare(Factories.LAZY_OPERATOR_AT_A_TIME_INSTANCE, "columnstore"),
-      //"volcano (pax store)" -> SqlPrepare(Factories.VOLCANO_INSTANCE, "paxstore"),
-      //"operator-at-a-time (pax store)" -> SqlPrepare(Factories.OPERATOR_AT_A_TIME_INSTANCE, "paxstore"),
-      //"block-at-a-time (pax store)" -> SqlPrepare(Factories.BLOCKATATIME_INSTANCE, "paxstore"),
+      "volcano (pax store)" -> SqlPrepare(Factories.VOLCANO_INSTANCE, "paxstore"),
+      "operator-at-a-time (pax store)" -> SqlPrepare(Factories.OPERATOR_AT_A_TIME_INSTANCE, "paxstore"),
+      "block-at-a-time (pax store)" -> SqlPrepare(Factories.BLOCKATATIME_INSTANCE, "paxstore"),
       "late-operator-at-a-time (pax store)" -> SqlPrepare(Factories.LAZY_OPERATOR_AT_A_TIME_INSTANCE, "paxstore"),
     ).map { case (key, prep) =>
       dynamicContainer(key,

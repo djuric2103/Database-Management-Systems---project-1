@@ -15,9 +15,7 @@ import scala.jdk.CollectionConverters._
 class Project protected(input: Operator, projects: util.List[_ <: RexNode], rowType: RelDataType) extends skeleton.Project[Operator](input, projects, rowType) with Operator {
   lazy val vids : IndexedSeq[Column] = input.execute();
 
-  override def execute(): IndexedSeq[Column] = {
-    return vids;
-  }
+  override def execute(): IndexedSeq[Column] = vids
 
   private lazy val evals = lazyEval(projects.asScala.toIndexedSeq, input.getRowType, input.evaluators());
 
